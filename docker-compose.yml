@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  agent:
+    build: './agent'
+    ports:
+      - '2018:2018'
+    volumes:
+      - './data:/data:ro'
+  client:
+    build: './client'
+    depends_on:
+      - 'agent'
+    ports:
+      - '8080:8080'
+    environment:
+      HOME_DIR: '/data'
