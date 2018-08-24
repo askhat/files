@@ -1,0 +1,5 @@
+**/desktop.ini
+**/.nuxt
+**/dist
+**/node_modules
+**/npm-debug.log
