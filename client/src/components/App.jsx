@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { Container, Grid, Segment, Loader, Dimmer } from 'semantic-ui-react'
+import Toolbar from './Toolbar.jsx'
 import Files from './Files.jsx'
 import Stats from './Stats.jsx'
 import ls from '../lib/ls'
@@ -98,27 +99,34 @@ export default class App extends Component {
   render = () => {
     const { state } = this
 
-    return (<Container fluid>
+    return (<Container>
       {state.uiLoading ? <Dimmer active={state.uiLoading} inverted>
         <Loader>{state.uiMessage}</Loader>
       </Dimmer> : <Grid columns={2}>
-        <Grid.Column>
-          <Segment style={unselectable}>
-            <Files listing={state.fileListing}
-              canGoBack={state.currentPath !== '/'}
-              onSelectItem={this.selectHandler}/>
-          </Segment>
-        </Grid.Column>
-        <Grid.Column>
-          <Segment style={centerContetns}>
-            {state.wordStats.stats ? <Stats
-              onSelectOverall={this.loadOverallStats}
-              data={state.wordStats.stats}
-              title={state.wordStats.path}/> : <p>
-                Double ckick on any text file to show its stats
-              </p>}
-          </Segment>
-        </Grid.Column>
+        <Grid.Row>
+          <Grid.Column width={16}>
+            <Toolbar/>
+          </Grid.Column>
+        </Grid.Row>
+        <Grid.Row>
+          <Grid.Column>
+            <Segment style={unselectable}>
+              <Files listing={state.fileListing}
+                canGoBack={state.currentPath !== '/'}
+                onSelectItem={this.selectHandler}/>
+            </Segment>
+          </Grid.Column>
+          <Grid.Column>
+            <Segment style={centerContetns}>
+              {state.wordStats.stats ? <Stats
+                onSelectOverall={this.loadOverallStats}
+                data={state.wordStats.stats}
+                title={state.wordStats.path}/> : <p>
+                  Double ckick on any text file to show its stats
+                </p>}
+            </Segment>
+          </Grid.Column>
+        </Grid.Row>
       </Grid>}
     </Container>)
   }
