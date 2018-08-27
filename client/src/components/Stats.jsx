@@ -32,7 +32,6 @@ export default class Stats extends Component {
         loader={<Dimmer active inverted><Loader>Stats&nbsp;are&nbsp;loading</Loader></Dimmer>}
         options={{ title: this.props.title, legend: false }}
         height='80vh'
-        width='40vw'
         data={[
           ['Word', 'Occurences'],
           ...this.props.data

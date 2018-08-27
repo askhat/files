@@ -3,12 +3,12 @@ import { Menu, Icon, Input, Checkbox, Dropdown, Popup } from 'semantic-ui-react'
 
 export default class Toolbar extends Component {
   render = () => {
-    return (<Menu fluid>
+    return (<Menu>
       <Popup content='Click to get back' trigger={<Menu.Item>
         <Icon name='arrow left'/>
       </Menu.Item>}/>
       <Popup content='Edit path then press return to navagate' trigger={<Menu.Item>
-        <Input className='icon' icon='arrow right'/>
+        <Input transparent className='icon' icon='arrow right'/>
       </Menu.Item>}/>
       <Menu.Menu position='right'>
         <Popup content='Include files in subdirectories' trigger={<Menu.Item>
@@ -23,4 +23,4 @@ export default class Toolbar extends Component {
       </Menu.Menu>
     </Menu>)
   }
-}
+}

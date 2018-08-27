@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Container, Grid, Segment, Loader, Dimmer } from 'semantic-ui-react'
+import { Container, Grid, Message, Loader, Dimmer } from 'semantic-ui-react'
 import Toolbar from './Toolbar.jsx'
 import Files from './Files.jsx'
 import Stats from './Stats.jsx'
@@ -47,6 +47,7 @@ export default class App extends Component {
     }
   }
 
+  // FIXME
   loadOverallStats = (e, { checked }) => {
     if (checked) {
       this.setState(prevState => ({ wordStatsCache: prevState.wordStats }))
@@ -110,21 +111,21 @@ export default class App extends Component {
         </Grid.Row>
         <Grid.Row>
           <Grid.Column>
-            <Segment style={unselectable}>
-              <Files listing={state.fileListing}
-                canGoBack={state.currentPath !== '/'}
-                onSelectItem={this.selectHandler}/>
-            </Segment>
+            <Files
+              style={unselectable}
+              listing={state.fileListing}
+              canGoBack={state.currentPath !== '/'}
+              onSelectItem={this.selectHandler}/>
           </Grid.Column>
           <Grid.Column>
-            <Segment style={centerContetns}>
-              {state.wordStats.stats ? <Stats
-                onSelectOverall={this.loadOverallStats}
-                data={state.wordStats.stats}
-                title={state.wordStats.path}/> : <p>
+            {state.wordStats.stats ? <Stats
+              onSelectOverall={this.loadOverallStats}
+              data={state.wordStats.stats}
+              title={state.wordStats.path}/> : <Message>
+                <p style={centerAlign}>
                   Double ckick on any text file to show its stats
-                </p>}
-            </Segment>
+                </p>
+              </Message>}
           </Grid.Column>
         </Grid.Row>
       </Grid>}
@@ -140,8 +141,6 @@ const unselectable = {
   userSelect: 'none'
 }
 
-const centerContetns = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center'
+const centerAlign = {
+  textAlign: 'center'
 }
