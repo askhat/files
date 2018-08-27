@@ -6,7 +6,8 @@ import http from './http'
  */
 export default async function wc (path) {
   try {
-    const { data } = await http.put('/wc', { path })
+  	const params = { path }
+    const { data } = await http.get('/wc', { params })
     return data
   } catch (e) {
     throw e
