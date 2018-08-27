@@ -21,16 +21,16 @@ export default function ls (path) {
 
     const stats = lstatSync(path)
     if (stats.isDirectory()) {
-      readdir(path, ENCODING, async (err, fileNames) => {
+      readdir(path, ENCODING, (err, fileNames) => {
         if (err) reject(err)
 
-        const files = await fileNames.map(async name => {
+        const files = fileNames.map(async name => {
           const filePath = join(path, name)
           const type = await detectType(filePath)
           return { name, type, path: filePath  }
         })
 
-        Promise.all(files).then((listing) => resolve({ path, listing }))
+        Promise.all(files).then(listing => resolve(listing))
       })
     } else {
       reject(new Error(`${dir} is not a directory`))
