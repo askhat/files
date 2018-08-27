@@ -10,7 +10,7 @@ export default function wc (path) {
     readFile(path, 'utf8', (err, contents) => {
       if (err) reject(err)
       const stats = counter(contents)
-      resolve({ path, stats })
+      resolve(stats)
     })
   })
 }
