@@ -16,31 +16,36 @@ export default function ls (path, recursive) {
 
     path = await replaceZipPath(path)
 
-    if (!existsSync(path)) {
-      reject(new Error(`${path} does not exist`))
-    }
+    // if (!existsSync(path)) {
+    //   reject(new Error(`${path} does not exist`))
+    // }
 
-    const stats = lstatSync(path)
-    if (stats.isDirectory()) {
-      const cb = (err, fileNames) => {
-        if (err) reject(err)
+    let stats
+    try {
+      stats = lstatSync(path)
+      if (stats.isDirectory()) {
+        const cb = (err, fileNames) => {
+          if (err) reject(err)
 
-        const files = fileNames.map(async name => {
-          const filePath = recursive ? name : join(path, name)
-          const type = await detectType(filePath)
-          return { name, type, path: filePath  }
-        })
-        Promise.all(files).then(listing => resolve(listing))
-      }
+          const files = fileNames.map(async name => {
+            const filePath = recursive ? name : join(path, name)
+            const type = await detectType(filePath)
+            return { name, type, path: filePath  }
+          })
+          Promise.all(files).then(listing => resolve(listing))
+        }
 
-      if (recursive) {
-        recursiveReaddir(path, cb)
+        if (recursive) {
+          recursiveReaddir(path, cb)
+        } else {
+          readdir(path, ENCODING, cb)
+        }
+
       } else {
-        readdir(path, ENCODING, cb)
+        reject(new Error(`${dir} is not a directory`))
       }
-
-    } else {
-      reject(new Error(`${dir} is not a directory`))
+    } catch (e) {
+      reject(e)
     }
   })
 }
