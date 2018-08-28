@@ -20,6 +20,7 @@ export default class App extends Component {
     path: '',
     history: [],
     listing: [],
+    statsListing: [],
     stats: [],
     statsLimit: 100,
     currentChartType: 'BarChart',
@@ -32,6 +33,7 @@ export default class App extends Component {
   componentDidMount = async () => {
     try {
       await this.listDirectory()
+      await this.fillStatsListing()
       await this.loadStats()
       this.uiUnlock()
     } catch (e) {
@@ -46,30 +48,37 @@ export default class App extends Component {
       return { ...file, ...isTxt(file.type) && { showStats: true } }
     })
     this.setState({ listing, path })
-    this.loadStats()
+  }
+
+  fillStatsListing = async () => {
+    const statsListing = await this.state.listing.reduce(async (acc = [], file) => {
+      const current = await acc
+      if (file.showStats) {
+        isTxt(file.type) && current.push(file)
+        isDir(file.type) && current.push(...(await ls(file.path)).filter(f => isTxt(f.type)))
+      }
+      return current
+    }, [])
+    this.setState(() => ({ statsListing }), this.loadStats)
   }
 
   loadStats = async () => {
-    const included = this.state.listing.filter(f => f.showStats)
+    const included = this.state.statsListing
     const rawStats = await Promise.all(included.map(f => wc(f.path)))
     const stats = joinStats(rawStats)
     this.setState({ stats })
   }
 
-  handleSwitchChartType = (e, { value: currentChartType }) => {
-    this.setState({ currentChartType })
-  }
-
   handleToggleFileStats = async (e, { checked: showStats }, file) => {
     this.setState(({ listing }) => ({
       listing: listing.map(f => f === file ? { ...f, showStats } : f)
-    }), this.loadStats)
+    }), this.fillStatsListing)
   }
 
   handleChangeDirectory = async ({ type, path }) => {
     const { state } = this
 
-    if (type === 'directory' || type === 'archive') {
+    if (isDir(type)) {
       this.setState({ wordStats: {} })
       if (path !== '..') {
         this.setState({ path: [...state.history, state.path], wordStats: [] })
@@ -86,6 +95,10 @@ export default class App extends Component {
   handleSliceStats = (e, { checked }, statsLimit = 100) => {
     if (!checked) statsLimit = null
     this.setState({ statsLimit })
+  }
+
+  handleSwitchChartType = (e, { value: currentChartType }) => {
+    this.setState({ currentChartType })
   }
 
   render = () => {
@@ -121,7 +134,7 @@ export default class App extends Component {
           </Grid.Column>
           <Grid.Column>
 
-            {state.stats.length ? <Stats
+            {state.statsListing.length ? <Stats
               chartType={state.currentChartType}
               limit={state.statsLimit}
               data={state.stats}/> : <Message>
