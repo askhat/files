@@ -18,7 +18,7 @@ Initial requirements:
 
 ## Running the application
 
-The easies way to run the application is trought Docker. The app is supplied with `docker-compose` file which defines and configures bouth applications. If you have Docker and Docker Compose installed on your machine submit the following:
+The easiest way to run the application is trough Docker. The app is supplied with `docker-compose` file which defines and configures both applications. If you have Docker and Docker Compose installed on your machine submit the following:
 
 ```
 # Assuming you're in the project root
@@ -39,7 +39,7 @@ The developer's version of the app is available by submitting the following comm
 $ cd agent
 $ npm install
 $ npm run dev
-// open different tty at repository root
+// open different tty at the repository root
 $ cd client
 $ npm install
 $ npm run dev
