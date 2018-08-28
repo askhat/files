@@ -121,6 +121,7 @@ export default class App extends Component {
               chartTypes={state.avaliableChartTypes}
               chartType={state.currentChartType}
               limitChecked={state.statsLimit}
+              onGoBack={this.handleChangeDirectory}
               onSwitchChartType={this.handleSwitchChartType}
               onRecursiveCheck={this.handleRecursive}
               onSliceCheck={this.handleSliceStats}/>
