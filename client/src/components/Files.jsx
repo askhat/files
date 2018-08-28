@@ -3,16 +3,12 @@ import { List, Checkbox } from 'semantic-ui-react'
 import fileIcon from '../lib/file_icon'
 
 export default class Files extends Component {
-  showCheckbox = ({ currentTarget }) => {
-    currentTarget.childNodes.forEach(node => console.log(node))
-  }
-
   render = () => {
+    const { props } = this
+
     return (<List divided relaxed>
-      {this.props.canGoBack && <List.Item
-        onDoubleClick={() => {
-            this.props.onSelectItem({ type: 'directory', path: '..'})
-        }}>
+      {props.canGoBack && <List.Item
+        onDoubleClick={() => props.onSelectItem({ type: 'directory', path: '..'})}>
         <List.Icon
           name='folder open'
           size='large'
@@ -23,10 +19,10 @@ export default class Files extends Component {
         </List.Content>
       </List.Item>}
 
-      {this.props.listing.map(file => {
+      {props.listing.map(file => {
         return (<List.Item
             key={file.path}
-            onDoubleClick={() => this.props.onSelectItem(file)}>
+            onDoubleClick={() => props.onSelectItem(file)}>
           <div style={flex}>
             <div style={flex}>
               <List.Icon
@@ -38,7 +34,9 @@ export default class Files extends Component {
                 <List.Description>{file.type}</List.Description>
               </List.Content>
             </div>
-            <Checkbox/>
+            <Checkbox
+              checked={file.showStats}
+              onChange={(e, data) => props.onCheckItem(e, data, file)}/>
           </div>
         </List.Item>)
       })}

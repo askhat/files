@@ -6,95 +6,86 @@ import Stats from './Stats.jsx'
 import ls from '../lib/ls'
 import wc from '../lib/wc'
 import dirname from '../lib/dirname'
+import joinStats from '../lib/join_stats'
+import isTxt from '../lib/is_txt'
+
+const HOME_DIR = process.env['HOME_DIR']
 
 export default class App extends Component {
   state = {
+    uiError: false,
     uiLoading: true,
     uiMessage: 'App is loading...',
-    path: [],
-    currentPath: '',
-    fileListing: [],
-    wordStats: {},
-    wordStatsCache: {}
+    path: '',
+    history: [],
+    listing: [],
+    stats: [],
+    statsLimit: 100,
+    currentChartType: 'BarChart',
+    avaliableChartTypes: ['BarChart', 'ColumnChart', 'PieChart']
   }
+
+  uiLock = (uiMessage = '', uiError) => this.setState({ uiLoading: true, uiMessage, uiError })
+  uiUnlock = () => this.setState({ uiLoading: false, uiMessage: '' })
 
   componentDidMount = async () => {
-    await this.ls()
-    this.unlockUi()
-  }
-
-  lockUi = (uiMessage = '') => this.setState({ uiLoading: true, uiMessage })
-  unlockUi = () => this.setState({ uiLoading: false, uiMessage: '' })
-
-  ls = async path => {
     try {
-      const {
-        path: currentPath,
-        listing: fileListing
-      } = await ls(path)
-      this.setState({ fileListing, currentPath })
+      await this.listDirectory()
+      await this.loadStats()
+      this.uiUnlock()
     } catch (e) {
-      console.error(e)
+      this.uiLock(e.message, true)
     }
   }
 
-  wc = async path => {
-    try {
-      const wordStats = await wc(path)
-      this.setState({ wordStats })
-    } catch (e) {
-      console.error(e)
+  listDirectory = async (path = HOME_DIR) => {
+    let listing = await ls(path)
+    listing = listing.map(file => {
+      // Include all text files to stats by default
+      return { ...file, ...isTxt(file.type) && { showStats: true } }
+    })
+    this.setState({ listing, path })
+    this.loadStats()
+  }
+
+  loadStats = async () => {
+    const included = this.state.listing.filter(file => file.showStats)
+    const rawStats = await Promise.all(included.map(file => wc(file.path)))
+    const stats = joinStats(rawStats)
+    this.setState({ stats })
+  }
+
+  handleSwitchChartType = (e, { value: currentChartType }) => {
+    this.setState({ currentChartType })
+  }
+
+  handleToggleFileStats = (e, { checked: showStats }, file) => {
+    console.log(file)
+    this.setState(({ listing }) => ({
+      listing: listing.map(f => f === file ? { ...f, showStats } : f)
+    }), this.loadStats)
+  }
+
+  handleChangeDirectory = async ({ type, path }) => {
+    const { state } = this
+
+    if (type === 'directory' || type === 'archive') {
+      this.setState({ wordStats: {} })
+      if (path !== '..') {
+        this.setState({ path: [...state.history, state.path], wordStats: [] })
+      } else {
+        path = state.history.slice(-1)[0] || dirname(state.path)
+        this.setState({ path: state.history.slice(0, -1) })
+      }
+      this.uiLock(`Moving to ${path}`)
+      await this.listDirectory(path)
+      this.uiUnlock()
     }
   }
 
-  // FIXME
-  loadOverallStats = (e, { checked }) => {
-    if (checked) {
-      this.setState(prevState => ({ wordStatsCache: prevState.wordStats }))
-      const textFiles = this.state.fileListing.filter(file => file.type.match(/utf|ascii/))
-      const promisedStats = textFiles.map(file => wc(file.path))
-      Promise.all(promisedStats).then(allFilesStats => {
-        const overallStats = allFilesStats.reduce((acc = [], { stats }) => {
-          stats.forEach(el => {
-            const existing = acc.find(item => item[0] === el[0])
-            if (existing) {
-              existing[1] += el[1]
-            } else {
-              acc.push(el)
-            }
-          })
-          return acc
-        }, overallStats)
-        this.setState({ wordStats: {path: this.state.currentPath, stats: overallStats} })
-      })
-    } else {
-      this.setState(prevState => ({ wordStats: prevState.wordStatsCache, wordStatsCache: {} }))
-    }
-  }
-
-  selectHandler = file => {
-    switch (file.type) {
-      case 'directory':
-      case 'archive':
-        this.goTo(file.path)
-        break
-      default:
-        this.wc(file.path)
-        break
-    }
-  }
-
-  goTo = async path => {
-    this.setState({ wordStats: {} })
-    if (path !== '..') {
-      this.setState({ path: [...this.state.path, this.state.currentPath], wordStats: [] })
-    } else {
-      path = this.state.path.slice(-1)[0] || dirname(this.state.currentPath)
-      this.setState({ path: this.state.path.slice(0, -1) })
-    }
-    this.lockUi(`Moving to ${path}`)
-    await this.ls(path)
-    this.unlockUi()
+  handleSliceStats = (e, { checked }, statsLimit = 100) => {
+    if (!checked) statsLimit = null
+    this.setState({ statsLimit })
   }
 
   render = () => {
@@ -102,30 +93,43 @@ export default class App extends Component {
 
     return (<Container>
       {state.uiLoading ? <Dimmer active={state.uiLoading} inverted>
-        <Loader>{state.uiMessage}</Loader>
+        <Loader indeterminate={state.uiError}>{state.uiMessage}</Loader>
       </Dimmer> : <Grid columns={2}>
         <Grid.Row>
           <Grid.Column width={16}>
-            <Toolbar/>
+
+            <Toolbar
+              path={state.path}
+              chartTypes={state.avaliableChartTypes}
+              chartType={state.currentChartType}
+              limitChecked={state.statsLimit}
+              onSwitchChartType={this.handleSwitchChartType}
+              onRecursiveCheck={this.handleRecursive}
+              onSliceCheck={this.handleSliceStats}/>
+
           </Grid.Column>
         </Grid.Row>
         <Grid.Row>
-          <Grid.Column>
+          <Grid.Column style={unselectable}>
+
             <Files
-              style={unselectable}
-              listing={state.fileListing}
-              canGoBack={state.currentPath !== '/'}
-              onSelectItem={this.selectHandler}/>
+              listing={state.listing}
+              canGoBack={state.path !== '/'}
+              onSelectItem={this.handleChangeDirectory}
+              onCheckItem={this.handleToggleFileStats}/>
+
           </Grid.Column>
           <Grid.Column>
-            {state.wordStats.stats ? <Stats
-              onSelectOverall={this.loadOverallStats}
-              data={state.wordStats.stats}
-              title={state.wordStats.path}/> : <Message>
+
+            {state.stats.length ? <Stats
+              chartType={state.currentChartType}
+              limit={state.statsLimit}
+              data={state.stats}/> : <Message>
                 <p style={centerAlign}>
-                  Double ckick on any text file to show its stats
+                  Check any item to include in stats
                 </p>
               </Message>}
+
           </Grid.Column>
         </Grid.Row>
       </Grid>}

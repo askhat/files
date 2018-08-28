@@ -17,7 +17,7 @@ export default class Toolbar extends Component {
         </Menu.Item>}/>
 
       <Popup
-        content='Edit path then press return to navagate'
+        content='Edit path then press return or click the arrow to navagate'
         trigger={<Menu.Item
           style={{flexGrow: 1}}
           as='div'>
@@ -27,6 +27,21 @@ export default class Toolbar extends Component {
             icon='arrow right'
             value={this.props.path}/>
         </Menu.Item>}/>
+
+      <Popup
+        content='Include files in subdirectories'
+        trigger={<Menu.Item as='div'>
+          <Checkbox label='Recursive' onChange={props.onRecursiveCheck}/>
+      </Menu.Item>}/>
+
+      <Popup
+        content='Show only top hundred words'
+        trigger={<Menu.Item as='div'>
+          <Checkbox
+            label='Top 100'
+            onChange={props.onSliceCheck}
+            defaultChecked/>
+      </Menu.Item>}/>
 
       <Menu.Item>
           <Dropdown
