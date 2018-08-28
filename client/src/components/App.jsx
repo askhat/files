@@ -34,32 +34,42 @@ export default class App extends Component {
   componentDidMount = async () => {
     try {
       await this.listDirectory()
-      this.uiUnlock()
     } catch (e) {
       this.uiLock(e.message, true)
     }
   }
 
   listDirectory = async (path = HOME_DIR) => {
-    let listing = await ls(path)
-    listing = listing.map(file => {
-      // Include all text files to stats by default
-      return { ...file, ...isTxt(file.type) && { showStats: true } }
-    })
-    this.setState(() => ({ listing, path }), this.fillStatsListing)
+    try {
+      let listing = await ls(path)
+      listing = listing.map(file => {
+        // Include all text files to stats by default
+        return { ...file, ...isTxt(file.type) && { showStats: true } }
+      })
+      this.setState(() => ({ listing, path }), this.fillStatsListing)
+      this.uiUnlock()
+    } catch (e) {
+      this.uiLock(e.message, true)
+      // throw e
+    }
   }
 
   fillStatsListing = async () => {
-    const r = this.state.recursive
-    const statsListing = await this.state.listing.reduce(async (acc = [], file) => {
-      const current = await acc
-      if (file.showStats) {
-        isTxt(file.type) && current.push(file)
-        isDir(file.type) && current.push(...(await ls(file.path, r)).filter(f => isTxt(f.type)))
-      }
-      return current
-    }, [])
-    this.setState(() => ({ statsListing }), this.loadStats)
+    try {
+      const r = this.state.recursive
+      const statsListing = await this.state.listing.reduce(async (acc = [], file) => {
+        const current = await acc
+        if (file.showStats) {
+          isTxt(file.type) && current.push(file)
+          isDir(file.type) && current.push(...(await ls(file.path, r)).filter(f => isTxt(f.type)))
+        }
+        return current
+      }, [])
+      this.setState(() => ({ statsListing }), this.loadStats)
+    } catch (e) {
+      this.uiLock(e.message, true)
+      // throw e
+    }
   }
 
   loadStats = async () => {
@@ -121,7 +131,7 @@ export default class App extends Component {
               chartTypes={state.avaliableChartTypes}
               chartType={state.currentChartType}
               limitChecked={state.statsLimit}
-              onGoBack={this.handleChangeDirectory}
+              onChangeDir={this.handleChangeDirectory}
               onSwitchChartType={this.handleSwitchChartType}
               onRecursiveCheck={this.handleRecursive}
               onSliceCheck={this.handleSliceStats}/>

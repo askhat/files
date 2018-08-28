@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Menu, Icon, Input, Checkbox, Dropdown, Popup } from 'semantic-ui-react'
+import { Menu, Icon, Input, Checkbox, Dropdown, Popup, Button } from 'semantic-ui-react'
 
 export default class Toolbar extends Component {
   state = {
@@ -23,7 +23,7 @@ export default class Toolbar extends Component {
       <Popup
         content='Click to get back'
         trigger={<Menu.Item
-          onClick={() => props.onGoBack({ type: 'directory', path: '..' })}>
+          onClick={() => props.onChangeDir({ type: 'directory', path: '..' })}>
           <Icon name='arrow left'/>
         </Menu.Item>}/>
 
@@ -38,9 +38,13 @@ export default class Toolbar extends Component {
             onChange={this.handlePathChange}
             onKeyPress={({ key }) => {
               const { path } = state
-              key === 'Enter' && props.onGoBack({ type: 'directory', path })
+              key === 'Enter' && props.onChangeDir({ type: 'directory', path })
             }}
-            icon='arrow right'
+            action={<Button style={noShadow} basic circular icon onClick={() => {
+              const { path } = state
+              props.onChangeDir({ type: 'directory', path })}}>
+                <Icon name='arrow right'/>
+            </Button>}
             value={state.path}/>
         </Menu.Item>}/>
 
@@ -67,4 +71,8 @@ export default class Toolbar extends Component {
       </Menu.Item>
     </Menu>)
   }
+}
+
+const noShadow = {
+  boxShadow: 'unset'
 }
