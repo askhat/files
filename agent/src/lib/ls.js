@@ -1,5 +1,6 @@
 import { readdir, lstatSync, existsSync } from 'fs'
 import { join } from 'path'
+import recursiveReaddir from 'recursive-readdir'
 import { Magic, MAGIC_MIME_ENCODING } from 'mmmagic'
 import unzip from './unzip'
 import { tmpZips } from '../index'
@@ -10,7 +11,7 @@ import { ENCODING } from '../settings'
  * @param {string} dir a directory to list
  * @returns {Promise<Object>} representation of a directory
  */
-export default function ls (path) {
+export default function ls (path, recursive) {
   return new Promise(async (resolve, reject) => {
 
     path = await replaceZipPath(path)
@@ -21,17 +22,23 @@ export default function ls (path) {
 
     const stats = lstatSync(path)
     if (stats.isDirectory()) {
-      readdir(path, ENCODING, (err, fileNames) => {
+      const cb = (err, fileNames) => {
         if (err) reject(err)
 
         const files = fileNames.map(async name => {
-          const filePath = join(path, name)
+          const filePath = recursive ? name : join(path, name)
           const type = await detectType(filePath)
           return { name, type, path: filePath  }
         })
-
         Promise.all(files).then(listing => resolve(listing))
-      })
+      }
+
+      if (recursive) {
+        recursiveReaddir(path, cb)
+      } else {
+        readdir(path, ENCODING, cb)
+      }
+
     } else {
       reject(new Error(`${dir} is not a directory`))
     }

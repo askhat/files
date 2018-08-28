@@ -19,6 +19,7 @@ export default class App extends Component {
     uiMessage: 'App is loading...',
     path: '',
     history: [],
+    recursive: false,
     listing: [],
     statsListing: [],
     stats: [],
@@ -33,8 +34,6 @@ export default class App extends Component {
   componentDidMount = async () => {
     try {
       await this.listDirectory()
-      await this.fillStatsListing()
-      await this.loadStats()
       this.uiUnlock()
     } catch (e) {
       this.uiLock(e.message, true)
@@ -47,15 +46,16 @@ export default class App extends Component {
       // Include all text files to stats by default
       return { ...file, ...isTxt(file.type) && { showStats: true } }
     })
-    this.setState({ listing, path })
+    this.setState(() => ({ listing, path }), this.fillStatsListing)
   }
 
   fillStatsListing = async () => {
+    const r = this.state.recursive
     const statsListing = await this.state.listing.reduce(async (acc = [], file) => {
       const current = await acc
       if (file.showStats) {
         isTxt(file.type) && current.push(file)
-        isDir(file.type) && current.push(...(await ls(file.path)).filter(f => isTxt(f.type)))
+        isDir(file.type) && current.push(...(await ls(file.path, r)).filter(f => isTxt(f.type)))
       }
       return current
     }, [])
@@ -77,6 +77,7 @@ export default class App extends Component {
 
   handleChangeDirectory = async ({ type, path }) => {
     const { state } = this
+    this.setState({ recursive: false })
 
     if (isDir(type)) {
       this.setState({ wordStats: {} })
@@ -90,6 +91,10 @@ export default class App extends Component {
       await this.listDirectory(path)
       this.uiUnlock()
     }
+  }
+
+  handleRecursive = (e, { checked: recursive }) => {
+    this.setState(() => ({ recursive }), this.fillStatsListing)
   }
 
   handleSliceStats = (e, { checked }, statsLimit = 100) => {

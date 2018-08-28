@@ -14,8 +14,10 @@
     "compression": "^1.7.3",
     "cors": "^2.8.4",
     "express": "^4.16.3",
+    "express-query-boolean": "^2.0.0",
     "mmmagic": "^0.5.0",
-    "morgan": "^1.9.0"
+    "morgan": "^1.9.0",
+    "recursive-readdir": "^2.2.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0-rc.1",
