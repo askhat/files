@@ -148,7 +148,7 @@ export default class App extends Component {
           </Grid.Column>
           <Grid.Column>
 
-            {state.statsListing.length ? <Stats
+            {state.stats.length ? <Stats
               chartType={state.currentChartType}
               limit={state.statsLimit}
               data={state.stats}/> : <Message>
