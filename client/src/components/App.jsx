@@ -49,8 +49,8 @@ export default class App extends Component {
       this.setState(() => ({ listing, path }), this.fillStatsListing)
       this.uiUnlock()
     } catch (e) {
-      this.uiLock(e.message, true)
-      // throw e
+      this.uiLock(`${e.message}, redirecting...`, true)
+      setTimeout(this.listDirectory, 1500)
     }
   }
 
@@ -68,7 +68,6 @@ export default class App extends Component {
       this.setState(() => ({ statsListing }), this.loadStats)
     } catch (e) {
       this.uiLock(e.message, true)
-      // throw e
     }
   }
 
@@ -99,7 +98,6 @@ export default class App extends Component {
       }
       this.uiLock(`Moving to ${path}`)
       await this.listDirectory(path)
-      this.uiUnlock()
     }
   }
 

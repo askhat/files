@@ -30,7 +30,7 @@ app.get('/ls', async (req, res) => {
     const data = await ls(path, recursive)
     res.json(data)
   } catch (e) {
-    res.status(400).json(e.message)
+    res.status(400).json(e)
   }
 })
 
