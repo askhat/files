@@ -82,10 +82,10 @@ export default class App extends Component {
     if (isDir(type)) {
       this.setState({ wordStats: {} })
       if (path !== '..') {
-        this.setState({ path: [...state.history, state.path], wordStats: [] })
+        this.setState({ history: [...state.history, state.path], wordStats: [] })
       } else {
         path = state.history.slice(-1)[0] || dirname(state.path)
-        this.setState({ path: state.history.slice(0, -1) })
+        this.setState({ history: state.history.slice(0, -1) })
       }
       this.uiLock(`Moving to ${path}`)
       await this.listDirectory(path)
