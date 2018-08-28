@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import { List, Checkbox } from 'semantic-ui-react'
 import fileIcon from '../lib/file_icon'
+import isTxt from '../lib/is_txt'
+import isDir from '../lib/is_dir'
 
 export default class Files extends Component {
   render = () => {
@@ -36,6 +38,7 @@ export default class Files extends Component {
             </div>
             <Checkbox
               checked={file.showStats}
+              disabled={!(isDir(file.type) || isTxt(file.type))}
               onChange={(e, data) => props.onCheckItem(e, data, file)}/>
           </div>
         </List.Item>)

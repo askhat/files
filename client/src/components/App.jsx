@@ -8,6 +8,7 @@ import wc from '../lib/wc'
 import dirname from '../lib/dirname'
 import joinStats from '../lib/join_stats'
 import isTxt from '../lib/is_txt'
+import isDir from '../lib/is_dir'
 
 const HOME_DIR = process.env['HOME_DIR']
 
@@ -49,8 +50,8 @@ export default class App extends Component {
   }
 
   loadStats = async () => {
-    const included = this.state.listing.filter(file => file.showStats)
-    const rawStats = await Promise.all(included.map(file => wc(file.path)))
+    const included = this.state.listing.filter(f => f.showStats)
+    const rawStats = await Promise.all(included.map(f => wc(f.path)))
     const stats = joinStats(rawStats)
     this.setState({ stats })
   }
@@ -59,8 +60,7 @@ export default class App extends Component {
     this.setState({ currentChartType })
   }
 
-  handleToggleFileStats = (e, { checked: showStats }, file) => {
-    console.log(file)
+  handleToggleFileStats = async (e, { checked: showStats }, file) => {
     this.setState(({ listing }) => ({
       listing: listing.map(f => f === file ? { ...f, showStats } : f)
     }), this.loadStats)
